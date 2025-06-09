@@ -85,146 +85,88 @@
         </div>
         
         <h3>Farm Locations</h3>
+        <input type="text" id="searchInput" placeholder="Search farms..." style="width:100%;margin-bottom:10px;padding:5px;" />
         <div class="farm-list" id="farmList"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Sample data structure for avocado farms
-        // Replace this with real data when available
-        const avocadoFarms = [
-            {
-                name: "Sunshine Coast Avocados",
-                lat: -26.6500,
-                lng: 152.9000,
-                area: 45,
-                region: "Sunshine Coast",
-                established: 2010
-            },
-            {
-                name: "Atherton Tablelands Farm",
-                lat: -17.2686,
-                lng: 145.4743,
-                area: 120,
-                region: "Far North Queensland",
-                established: 2005
-            },
-            {
-                name: "Bundaberg Groves",
-                lat: -24.8661,
-                lng: 152.3489,
-                area: 80,
-                region: "Wide Bay",
-                established: 2008
-            },
-            {
-                name: "Mareeba Orchards",
-                lat: -17.0000,
-                lng: 145.4333,
-                area: 65,
-                region: "Far North Queensland",
-                established: 2012
-            },
-            {
-                name: "Childers Avocado Estate",
-                lat: -25.2383,
-                lng: 152.2794,
-                area: 95,
-                region: "Wide Bay",
-                established: 2007
-            },
-            {
-                name: "Ravenshoe Hills",
-                lat: -17.6094,
-                lng: 145.4781,
-                area: 55,
-                region: "Far North Queensland",
-                established: 2015
-            },
-            {
-                name: "Gympie Green Gold",
-                lat: -26.1834,
-                lng: 152.6657,
-                area: 40,
-                region: "Wide Bay",
-                established: 2018
-            },
-            {
-                name: "Toowoomba Avocados",
-                lat: -27.5598,
-                lng: 151.9507,
-                area: 75,
-                region: "Darling Downs",
-                established: 2009
-            }
-        ];
-
-        // Initialize the map
         const map = L.map('map').setView([-20.9176, 142.7028], 6);
 
-        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Create custom icon for avocado farms
         const avocadoIcon = L.divIcon({
             html: '🥑',
             iconSize: [30, 30],
             className: 'avocado-marker'
         });
 
-        // Add markers for each farm
-        const markers = [];
-        avocadoFarms.forEach((farm, index) => {
-            const marker = L.marker([farm.lat, farm.lng], {icon: avocadoIcon})
-                .addTo(map)
-                .bindPopup(`
-                    <strong>${farm.name}</strong><br>
-                    Region: ${farm.region}<br>
-                    Area: ${farm.area} hectares<br>
-                    Established: ${farm.established}<br>
-                    Coordinates: ${farm.lat.toFixed(4)}, ${farm.lng.toFixed(4)}
-                `);
-            
-            markers.push(marker);
-        });
+        let markers = [];
+        let farms = [];
 
-        // Update statistics
-        document.getElementById('totalFarms').textContent = avocadoFarms.length;
-        const totalArea = avocadoFarms.reduce((sum, farm) => sum + farm.area, 0);
-        document.getElementById('totalArea').textContent = totalArea;
-        document.getElementById('avgSize').textContent = Math.round(totalArea / avocadoFarms.length);
+        function clearMarkers() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            document.getElementById('farmList').innerHTML = '';
+        }
 
-        // Populate farm list
-        const farmList = document.getElementById('farmList');
-        avocadoFarms.forEach((farm, index) => {
-            const farmItem = document.createElement('div');
-            farmItem.className = 'farm-item';
-            farmItem.innerHTML = `<strong>${farm.name}</strong> - ${farm.region} (${farm.area} ha)`;
-            farmItem.onclick = () => {
-                map.setView([farm.lat, farm.lng], 10);
-                markers[index].openPopup();
-            };
-            farmList.appendChild(farmItem);
-        });
+        function updateStats(data) {
+            document.getElementById('totalFarms').textContent = data.length;
+            const totalArea = data.reduce((sum, f) => sum + (f.area || 0), 0);
+            document.getElementById('totalArea').textContent = totalArea;
+            document.getElementById('avgSize').textContent = data.length ? Math.round(totalArea / data.length) : 0;
+        }
 
-        // Function to load external data (for future use)
-        async function loadFarmData(dataUrl) {
+        function populateList(data) {
+            const farmList = document.getElementById('farmList');
+            data.forEach((farm, index) => {
+                const marker = L.marker([farm.lat, farm.lng], {icon: avocadoIcon})
+                    .addTo(map)
+                    .bindPopup(
+                        `<strong>${farm.name}</strong><br>` +
+                        `Region: ${farm.region}<br>` +
+                        `Area: ${farm.area} hectares<br>` +
+                        `Established: ${farm.established}<br>` +
+                        `Coordinates: ${farm.lat.toFixed(4)}, ${farm.lng.toFixed(4)}`
+                    );
+                markers.push(marker);
+
+                const farmItem = document.createElement('div');
+                farmItem.className = 'farm-item';
+                farmItem.innerHTML = `<strong>${farm.name}</strong> - ${farm.region} (${farm.area} ha)`;
+                farmItem.onclick = () => {
+                    map.setView([farm.lat, farm.lng], 10);
+                    marker.openPopup();
+                };
+                farmList.appendChild(farmItem);
+            });
+        }
+
+        async function loadFarms(search = '') {
             try {
-                const response = await fetch(dataUrl);
-                const data = await response.json();
-                // Process and add data to map
-                console.log('Data loaded:', data);
-            } catch (error) {
-                console.error('Error loading data:', error);
+                const url = '/api/farms' + (search ? `?search=${encodeURIComponent(search)}` : '');
+                const response = await fetch(url);
+                farms = await response.json();
+                clearMarkers();
+                updateStats(farms);
+                populateList(farms);
+            } catch (err) {
+                console.error('Error fetching farms:', err);
             }
         }
 
-        // Example of how to export current data
+        document.getElementById('searchInput').addEventListener('input', e => {
+            loadFarms(e.target.value.trim());
+        });
+
+        // initial load
+        loadFarms();
+
         function exportData() {
-            const dataStr = JSON.stringify(avocadoFarms, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const dataStr = JSON.stringify(farms, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
             const exportLink = document.createElement('a');
             exportLink.setAttribute('href', dataUri);
             exportLink.setAttribute('download', 'queensland_avocado_farms.json');
