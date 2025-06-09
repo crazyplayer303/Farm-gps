@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///farms.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -35,6 +35,11 @@ with app.app_context():
     db.create_all()
 
 geolocator = Nominatim(user_agent="farm_api")
+
+@app.route('/')
+def index():
+    """Serve the static HTML map"""
+    return send_from_directory('.', 'avocadoFarms.html')
 
 @app.route('/api/farms', methods=['GET'])
 def get_farms():
@@ -74,4 +79,6 @@ def add_farm():
     return jsonify(farm.to_dict()), 201
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

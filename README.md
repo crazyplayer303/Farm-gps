@@ -1,24 +1,67 @@
 # Farm GPS
 
-This project provides tools for working with farm data in Queensland. The `server.py` file exposes a small REST API backed by a SQLite database.
+This repository contains a minimal example for displaying avocado farm locations in Queensland.
+It includes a static HTML map and a simple Flask backend with a SQLite database.
 
 ## Requirements
 
-Install the dependencies with pip:
+- Python 3.9+
+- `pip` for installing Python packages
+
+Install dependencies from `requirements.txt`:
 
 ```bash
-pip install flask flask_sqlalchemy geopy
+pip install -r requirements.txt
 ```
 
-## Running the API
+This installs Flask, Flask-SQLAlchemy and other utilities used by the project.
 
-The Flask server creates `app.db` on first start. Run:
+## Running the server
+
+Start the Flask server from the project root:
 
 ```bash
-python3 server.py
+python server.py
 ```
 
-The API exposes the following routes:
+The application will create a local SQLite database file `farms.db` if it does not already exist.
+By default the server listens on `http://localhost:5000/`.
+Opening that URL in a browser will display `avocadoFarms.html`.
 
-- `GET /api/farms` – list farms (optional query parameter `q` performs a simple search on name or region).
-- `POST /api/farms` – add a new farm. Provide JSON with at least `name`. If `lat`/`lng` are missing but an `address` is supplied, the address will be geocoded.
+You can also open the HTML page directly without running the server by opening
+`avocadoFarms.html` in a web browser, but the API to store farms will only be
+available when the server is running.
+
+## Example API usage
+
+List all stored farms:
+
+```bash
+curl http://localhost:5000/api/farms
+```
+
+Add a new farm record:
+
+```bash
+curl -X POST http://localhost:5000/api/farms \
+  -H "Content-Type: application/json" \
+  -d '{
+        "name": "Example Farm",
+        "lat": -27.0,
+        "lng": 153.0,
+        "area": 50,
+        "region": "Test Region",
+        "year_established": 2020
+      }'
+```
+
+If `lat` and `lng` are omitted but `address` is provided, the server will attempt
+to geocode the address before saving the farm.
+
+When a farm is added successfully, the API returns the new record in JSON format.
+
+## Development notes
+
+The backend logic for fetching real agricultural data is in `backend.py` and is
+separate from the Flask server in `server.py`. Currently `backend.py` only
+contains example code and does not communicate with the API.
