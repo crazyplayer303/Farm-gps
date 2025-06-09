@@ -1,3 +1,4 @@
 app.db
+farms.db
 __pycache__/
 .pytest_cache/

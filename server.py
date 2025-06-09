@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///farms.db'
+# Use a simple SQLite database stored in ``app.db``
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

@@ -24,7 +24,7 @@ Start the Flask server from the project root:
 python server.py
 ```
 
-The application will create a local SQLite database file `farms.db` if it does not already exist.
+The application will create a local SQLite database file `app.db` if it does not already exist.
 By default the server listens on `http://localhost:5000/`.
 Opening that URL in a browser will display `avocadoFarms.html`.
 
