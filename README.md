@@ -37,13 +37,19 @@ available when the server is running.
 List all stored farms:
 
 ```bash
-curl http://localhost:5000/farms
+curl http://localhost:5000/api/farms
+```
+
+Search farms by name or region:
+
+```bash
+curl "http://localhost:5000/api/farms?search=coast"
 ```
 
 Add a new farm record:
 
 ```bash
-curl -X POST http://localhost:5000/farms \
+curl -X POST http://localhost:5000/api/farms \
   -H "Content-Type: application/json" \
   -d '{
         "name": "Example Farm",

@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///farms.db'
@@ -16,9 +17,14 @@ class Farm(db.Model):
     region = db.Column(db.String(100))
     established = db.Column(db.Integer)
 
-@app.route('/farms', methods=['GET'])
+@app.route('/api/farms', methods=['GET'])
 def get_farms():
-    farms = Farm.query.all()
+    query = Farm.query
+    search = request.args.get('search', '').strip()
+    if search:
+        like = f"%{search}%"
+        query = query.filter(or_(Farm.name.ilike(like), Farm.region.ilike(like)))
+    farms = query.all()
     return jsonify([
         {
             'id': farm.id,
@@ -32,7 +38,7 @@ def get_farms():
         for farm in farms
     ])
 
-@app.route('/farms', methods=['POST'])
+@app.route('/api/farms', methods=['POST'])
 def add_farm():
     data = request.get_json()
     if not data:
