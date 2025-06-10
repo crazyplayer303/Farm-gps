@@ -26,7 +26,10 @@ def create_app(config_name: str = "default") -> Flask:
     from .routes.farms import farms_bp
     app.register_blueprint(farms_bp, url_prefix="/api/farms")
 
+ pk8v5r-codex/refactor-backend-to-modular-architecture
+=======
     from .routes.frontend import frontend_bp
     app.register_blueprint(frontend_bp)
 
+ main
     return app

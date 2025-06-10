@@ -3,9 +3,12 @@
 import argparse
 import json
 from pathlib import Path
+ pk8v5r-codex/refactor-backend-to-modular-architecture
+=======
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+ main
 
 from app import create_app
 from app.models import db, Farm
