@@ -5,11 +5,11 @@ from typing import List, Dict, Tuple
 import folium
 from geopy.geocoders import Nominatim
 
-class AvocadoFarmDataFetcher:
-    """Fetch and process avocado farm data from various sources"""
+class FarmDataFetcher:
+    """Fetch and process farm data from various sources"""
     
     def __init__(self):
-        self.geolocator = Nominatim(user_agent="avocado_farm_locator")
+        self.geolocator = Nominatim(user_agent="farm_locator")
         self.farms_data = []
     
     def fetch_qld_agricultural_data(self):
@@ -57,8 +57,8 @@ class AvocadoFarmDataFetcher:
             pass
         return None
     
-    def process_avocado_farms(self, raw_data: List[Dict]) -> List[Dict]:
-        """Process raw data into standardized format"""
+    def process_farms(self, raw_data: List[Dict]) -> List[Dict]:
+        """Process raw farm data into standardized format"""
         processed_farms = []
         
         for farm in raw_data:
@@ -71,7 +71,7 @@ class AvocadoFarmDataFetcher:
                 'region': farm.get('region', 'Unknown'),
                 'established': farm.get('year_established'),
                 'production_tons': farm.get('annual_production'),
-                'variety': farm.get('avocado_variety', 'Mixed')
+                'type': farm.get('crop_type', 'Unknown')
             }
             
             # If no coordinates, try to geocode
@@ -86,13 +86,13 @@ class AvocadoFarmDataFetcher:
         
         return processed_farms
     
-    def save_to_json(self, filename: str = 'queensland_avocado_farms.json'):
-        """Save processed data to JSON file"""
+    def save_to_json(self, filename: str = 'queensland_farms.json'):
+        """Save processed farm data to JSON file"""
         with open(filename, 'w') as f:
             json.dump(self.farms_data, f, indent=2)
         print(f"Data saved to {filename}")
     
-    def create_interactive_map(self, output_file: str = 'avocado_farms_map.html'):
+    def create_interactive_map(self, output_file: str = 'farms_map.html'):
         """Create an interactive map using folium"""
         # Center map on Queensland
         qld_map = folium.Map(location=[-20.9176, 142.7028], zoom_start=6)
@@ -133,7 +133,7 @@ class AvocadoFarmDataFetcher:
 
 # Example usage
 if __name__ == "__main__":
-    fetcher = AvocadoFarmDataFetcher()
+    fetcher = FarmDataFetcher()
     
     # Sample data for demonstration
     sample_farms = [
@@ -143,7 +143,7 @@ if __name__ == "__main__":
             'area_hectares': 45,
             'region': 'Sunshine Coast',
             'year_established': 2010,
-            'avocado_variety': 'Hass'
+            'crop_type': 'Avocado'
         },
         {
             'farm_name': 'Atherton Tablelands Farm',
@@ -152,12 +152,12 @@ if __name__ == "__main__":
             'area_hectares': 120,
             'region': 'Far North Queensland',
             'year_established': 2005,
-            'avocado_variety': 'Shepard'
+            'crop_type': 'Strawberry'
         }
     ]
     
     # Process sample data
-    fetcher.farms_data = fetcher.process_avocado_farms(sample_farms)
+    fetcher.farms_data = fetcher.process_farms(sample_farms)
     
     # Save to JSON
     fetcher.save_to_json()
