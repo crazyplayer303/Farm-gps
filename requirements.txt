@@ -1,6 +1,8 @@
 Flask
 Flask-SQLAlchemy
+python-dotenv
 requests
 pandas
 geopy
 folium
+pytest
