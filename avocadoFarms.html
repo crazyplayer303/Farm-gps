@@ -86,6 +86,13 @@
         
         <h3>Farm Locations</h3>
         <input type="text" id="searchInput" placeholder="Search farms..." style="width:100%;margin-bottom:10px;padding:5px;" />
+        <select id="typeFilter" style="width:100%;margin-bottom:10px;padding:5px;">
+            <option value="">All farm types</option>
+            <option value="Avocado">Avocado</option>
+            <option value="Strawberry">Strawberry</option>
+            <option value="Blueberry">Blueberry</option>
+        </select>
+        <button id="resetBtn" style="width:100%;margin-bottom:10px;">Reset</button>
         <div class="farm-list" id="farmList"></div>
     </div>
 
@@ -97,11 +104,15 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        const avocadoIcon = L.divIcon({
-            html: '🥑',
-            iconSize: [30, 30],
-            className: 'avocado-marker'
-        });
+        const icons = {
+            Avocado: L.divIcon({html: '🥑', iconSize: [30, 30], className: 'avocado-marker'}),
+            Strawberry: L.divIcon({html: '🍓', iconSize: [30, 30], className: 'avocado-marker'}),
+            Blueberry: L.divIcon({html: '🫐', iconSize: [30, 30], className: 'avocado-marker'})
+        };
+
+        function getIcon(type) {
+            return icons[type] || icons.Avocado;
+        }
 
         let markers = [];
         let farms = [];
@@ -122,11 +133,12 @@
         function populateList(data) {
             const farmList = document.getElementById('farmList');
             data.forEach((farm, index) => {
-                const marker = L.marker([farm.lat, farm.lng], {icon: avocadoIcon})
+                const marker = L.marker([farm.lat, farm.lng], {icon: getIcon(farm.type)})
                     .addTo(map)
                     .bindPopup(
                         `<strong>${farm.name}</strong><br>` +
                         `Region: ${farm.region}<br>` +
+                        `Type: ${farm.type || 'Unknown'}<br>` +
                         `Area: ${farm.area} hectares<br>` +
                         `Established: ${farm.established}<br>` +
                         `Coordinates: ${farm.lat.toFixed(4)}, ${farm.lng.toFixed(4)}`
@@ -135,7 +147,7 @@
 
                 const farmItem = document.createElement('div');
                 farmItem.className = 'farm-item';
-                farmItem.innerHTML = `<strong>${farm.name}</strong> - ${farm.region} (${farm.area} ha)`;
+                farmItem.innerHTML = `<strong>${farm.name}</strong> - ${farm.type || 'Unknown'} in ${farm.region} (${farm.area} ha)`;
                 farmItem.onclick = () => {
                     map.setView([farm.lat, farm.lng], 10);
                     marker.openPopup();
@@ -144,9 +156,12 @@
             });
         }
 
-        async function loadFarms(search = '') {
+        async function loadFarms(search = '', farmType = '') {
             try {
-                const url = '/api/farms' + (search ? `?search=${encodeURIComponent(search)}` : '');
+                const params = [];
+                if (search) params.push(`search=${encodeURIComponent(search)}`);
+                if (farmType) params.push(`type=${encodeURIComponent(farmType)}`);
+                const url = '/api/farms' + (params.length ? `?${params.join('&')}` : '');
                 const response = await fetch(url);
                 farms = await response.json();
                 clearMarkers();
@@ -157,19 +172,31 @@
             }
         }
 
-        document.getElementById('searchInput').addEventListener('input', e => {
-            loadFarms(e.target.value.trim());
+        const searchInput = document.getElementById('searchInput');
+        const typeFilter = document.getElementById('typeFilter');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function triggerLoad() {
+            loadFarms(searchInput.value.trim(), typeFilter.value);
+        }
+
+        searchInput.addEventListener('input', triggerLoad);
+        typeFilter.addEventListener('change', triggerLoad);
+        resetBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            typeFilter.value = '';
+            triggerLoad();
         });
 
         // initial load
-        loadFarms();
+        triggerLoad();
 
         function exportData() {
             const dataStr = JSON.stringify(farms, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
             const exportLink = document.createElement('a');
             exportLink.setAttribute('href', dataUri);
-            exportLink.setAttribute('download', 'queensland_avocado_farms.json');
+            exportLink.setAttribute('download', 'queensland_farms.json');
             exportLink.click();
         }
     </script>

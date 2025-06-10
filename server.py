@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///farms.db'
@@ -15,10 +16,19 @@ class Farm(db.Model):
     area = db.Column(db.Float)
     region = db.Column(db.String(100))
     established = db.Column(db.Integer)
+    type = db.Column(db.String(100))
 
-@app.route('/farms', methods=['GET'])
+@app.route('/api/farms', methods=['GET'])
 def get_farms():
-    farms = Farm.query.all()
+    query = Farm.query
+    search = request.args.get('search', '').strip()
+    farm_type = request.args.get('type', '').strip()
+    if search:
+        like = f"%{search}%"
+        query = query.filter(or_(Farm.name.ilike(like), Farm.region.ilike(like)))
+    if farm_type:
+        query = query.filter_by(type=farm_type)
+    farms = query.all()
     return jsonify([
         {
             'id': farm.id,
@@ -27,12 +37,13 @@ def get_farms():
             'lng': farm.lng,
             'area': farm.area,
             'region': farm.region,
-            'established': farm.established
+            'established': farm.established,
+            'type': farm.type
         }
         for farm in farms
     ])
 
-@app.route('/farms', methods=['POST'])
+@app.route('/api/farms', methods=['POST'])
 def add_farm():
     data = request.get_json()
     if not data:
@@ -43,7 +54,8 @@ def add_farm():
         lng=data.get('lng'),
         area=data.get('area'),
         region=data.get('region'),
-        established=data.get('established')
+        established=data.get('established'),
+        type=data.get('type')
     )
     db.session.add(farm)
     db.session.commit()

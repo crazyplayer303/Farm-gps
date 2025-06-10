@@ -1,6 +1,6 @@
 # Farm GPS
 
-This repository contains a minimal example for displaying avocado farm locations in Queensland.
+This repository contains a minimal example for displaying farm locations in Queensland.
 It includes a static HTML map and a simple Flask backend with a SQLite database.
 
 ## Requirements
@@ -27,6 +27,18 @@ python server.py
 The application will create a local SQLite database file `farms.db` if it does not already exist.
 By default the server listens on `http://localhost:5000/`.
 Opening that URL in a browser will display `avocadoFarms.html`.
+Run `python seed_data.py` once to populate the database with sample farms.
+
+## Seeding the database
+
+Before running the server for the first time you should load some example data
+into the database:
+
+```bash
+python seed_data.py
+```
+
+This step creates a few sample farms so the map has data to display.
 
 You can also open the HTML page directly without running the server by opening
 `avocadoFarms.html` in a web browser, but the API to store farms will only be
@@ -37,13 +49,25 @@ available when the server is running.
 List all stored farms:
 
 ```bash
-curl http://localhost:5000/farms
+curl http://localhost:5000/api/farms
+```
+
+Search farms by name or region:
+
+```bash
+curl "http://localhost:5000/api/farms?search=coast"
+```
+
+Filter by farm type (e.g. only strawberry farms):
+
+```bash
+curl "http://localhost:5000/api/farms?type=Strawberry"
 ```
 
 Add a new farm record:
 
 ```bash
-curl -X POST http://localhost:5000/farms \
+curl -X POST http://localhost:5000/api/farms \
   -H "Content-Type: application/json" \
   -d '{
         "name": "Example Farm",
@@ -51,7 +75,8 @@ curl -X POST http://localhost:5000/farms \
         "lng": 153.0,
         "area": 50,
         "region": "Test Region",
-        "established": 2020
+        "established": 2020,
+        "type": "Avocado"
       }'
 ```
 
