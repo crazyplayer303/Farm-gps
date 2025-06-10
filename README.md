@@ -1,14 +1,39 @@
-# Farm GPS
+# Farm GPS Backend
 
-This repository contains a minimal example for displaying farm locations in Queensland.  
-It includes a static HTML map and a simple Flask backend with a SQLite database.
+This project demonstrates a small Flask API for listing farms in Queensland. The
+code is structured using an application factory so it can easily be reused in
+other projects.
 
-## Requirements
+## Setup
 
-- Python 3.9+
-- `pip` for installing Python packages
+1. Create a virtual environment and install dependencies.
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Copy `.env` and adjust any settings (for example the database URL).
 
-Install dependencies from `requirements.txt`:
+## Running the API
 
+Use the provided `run.py` entry point:
 ```bash
-pip install -r requirements.txt
+python run.py
+```
+
+## Seeding Data
+
+You can seed the database with sample data located in `data/sample_farms.json`:
+```bash
+python cli/seed.py --file data/sample_farms.json
+```
+
+The seeder can also call the (mock) `FarmDataFetcher` service:
+```bash
+python cli/seed.py --fetch abares
+```
+
+## Running Tests
+
+Tests live in the `tests/` folder and can be executed with:
+```bash
+pytest
+```

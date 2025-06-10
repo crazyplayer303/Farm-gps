@@ -1,0 +1,73 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: Arial, sans-serif;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.header {
+  background-color: #2c5530;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+.controls input,
+.controls select {
+  padding: 0.5rem;
+  flex: 1;
+}
+.stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 1rem 0;
+}
+.stat-box {
+  background: #f5f5f5;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-align: center;
+}
+.stat-number {
+  font-weight: bold;
+}
+.main {
+  flex: 1;
+  display: flex;
+}
+.farm-list {
+  width: 250px;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
+  padding: 0.5rem;
+}
+.farm-item {
+  padding: 4px;
+  cursor: pointer;
+}
+.farm-item:hover {
+  background: #eee;
+}
+.map {
+  flex: 1;
+}
+@media (max-width: 600px) {
+  .main {
+    flex-direction: column;
+  }
+  .farm-list {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+}
