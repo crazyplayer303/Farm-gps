@@ -1,4 +1,7 @@
 __pycache__/
 *.pyc
 farms.db
+ pk8v5r-codex/refactor-backend-to-modular-architecture
 frontend/node_modules/
+=======
+ main
