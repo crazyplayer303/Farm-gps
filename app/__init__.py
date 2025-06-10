@@ -26,4 +26,7 @@ def create_app(config_name: str = "default") -> Flask:
     from .routes.farms import farms_bp
     app.register_blueprint(farms_bp, url_prefix="/api/farms")
 
+    from .routes.frontend import frontend_bp
+    app.register_blueprint(frontend_bp)
+
     return app
