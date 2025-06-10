@@ -23,11 +23,13 @@ def get_farms():
     query = Farm.query
     search = request.args.get('search', '').strip()
     farm_type = request.args.get('type', '').strip()
+    
     if search:
         like = f"%{search}%"
         query = query.filter(or_(Farm.name.ilike(like), Farm.region.ilike(like)))
     if farm_type:
         query = query.filter_by(type=farm_type)
+    
     farms = query.all()
     return jsonify([
         {
