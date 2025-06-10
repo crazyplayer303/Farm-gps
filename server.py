@@ -16,14 +16,20 @@ class Farm(db.Model):
     area = db.Column(db.Float)
     region = db.Column(db.String(100))
     established = db.Column(db.Integer)
+    type = db.Column(db.String(100))
 
 @app.route('/api/farms', methods=['GET'])
 def get_farms():
     query = Farm.query
     search = request.args.get('search', '').strip()
+    farm_type = request.args.get('type', '').strip()
+    
     if search:
         like = f"%{search}%"
         query = query.filter(or_(Farm.name.ilike(like), Farm.region.ilike(like)))
+    if farm_type:
+        query = query.filter_by(type=farm_type)
+    
     farms = query.all()
     return jsonify([
         {
@@ -33,7 +39,8 @@ def get_farms():
             'lng': farm.lng,
             'area': farm.area,
             'region': farm.region,
-            'established': farm.established
+            'established': farm.established,
+            'type': farm.type
         }
         for farm in farms
     ])
@@ -49,7 +56,8 @@ def add_farm():
         lng=data.get('lng'),
         area=data.get('area'),
         region=data.get('region'),
-        established=data.get('established')
+        established=data.get('established'),
+        type=data.get('type')
     )
     db.session.add(farm)
     db.session.commit()
